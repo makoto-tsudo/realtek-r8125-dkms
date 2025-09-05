@@ -1213,7 +1213,12 @@ void rtl8125_ptp_init(struct rtl8125_private *tp)
         switch (tp->HwSuppPtpVer) {
         case 3:
                 tp->pps_enable = 0;
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6,15,0)
+                hrtimer_init(&tp->pps_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+                tp->pps_timer.function = rtl8125_phy_hrtimer_for_pps;
+#else
                 hrtimer_setup(&tp->pps_timer, rtl8125_phy_hrtimer_for_pps, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+#endif
                 break;
         default:
                 break;
